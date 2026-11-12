@@ -192,7 +192,7 @@
 - [x] Task 10: [RE-READ] Init package manifests (`Cargo.toml`, `package.json`, `CMakeLists.txt`) using verified LTS/latest versions.
 - [x] Task 11: [RE-READ] Setup lint+format+test+pre-commit hooks; wire into CI workflows.
 - [x] Task 12: [RE-READ] `git init -b main`; `git add -A`; first signed commit; verify `.gitignore` blocks secrets. Show status and signature.
-- [ ] Task 13: [RE-READ] Run `gh repo create` for `tyyoj` and sibling repos (`tyyoj-contracts`, `tyyoj-backend`, `tyyoj-judger`, `tyyoj-frontend`). Push initial commits. Report URLs. STOP for owner confirmation.
+- [x] Task 13: [RE-READ] Run `gh repo create` for `tyyoj` and sibling repos (`tyyoj-contracts`, `tyyoj-backend`, `tyyoj-judger`, `tyyoj-frontend`). Push initial commits. Report URLs. STOP for owner confirmation.
 - [ ] Task 14: [RE-READ] Apply branch protection on `main` across all repos. Push labels. Commit templates.
 - [ ] Task 15: [RE-READ] Open initial issues — one per MVP item in `AI_REQUIREMENTS.md`.
 - [ ] Task 16: [RE-READ] Final report: repo tree, URLs, git log, checklist diff, owner-review checklist.
@@ -230,6 +230,7 @@
 ---
 
 ## CHANGELOG of requirements
+- 2026-11-12: Created 5 public GitHub repositories under `toiyeuyuriiiiionlinejudge` (tyyoj, tyyoj-contracts, tyyoj-backend, tyyoj-judger, tyyoj-frontend) and pushed initial signed commits via SSH. Completed Task 13.
 - 2026-11-12: Initialized git on main branch across all 5 repos, verified .gitignore blocks secrets, and committed initial signed commits with Co-authored-by trailer and validated SSH signatures. Completed Task 12.
 - 2026-11-12: Created .githooks (commit-msg enforcing Conventional Commits and Co-authored-by trailer, pre-commit blocking secrets and running linters) and tested validation. Completed Task 11.
 - 2026-11-12: Initialized package manifests (Cargo.toml in contracts/backend/judger, CMakeLists.txt in judger sandbox with upstream testlib.h, package.json in frontend and tyyoj root) with author "toiyeuyuriiiii & nmkdeveloper", license "MIT", planned GitHub URLs, and verified live LTS versions. Built and tested all projects successfully. Completed Task 10.
