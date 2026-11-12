@@ -1,0 +1,32 @@
+#!/usr/bin/env bash
+# Git pre-commit hook enforcing formatting and secrets prevention
+
+set -e
+
+# Block any staged secrets or .env files
+staged_files=$(git diff --cached --name-only)
+for file in $staged_files; do
+    if [[ "$file" == ".env" || "$file" == *".env.local"* || "$file" == *".pem"* || "$file" == *".key"* ]]; then
+        echo "ERROR: Attempting to commit secret or environment file: $file" >&2
+        exit 1
+    fi
+done
+
+# If Rust repo, check cargo fmt
+if [ -f "Cargo.toml" ]; then
+    if command -v cargo &>/dev/null; then
+        cargo fmt --check
+    fi
+fi
+
+# If C++ files modified in judger, check clang-format
+if [ -f "CMakeLists.txt" ] && command -v clang-format &>/dev/null; then
+    cpp_files=$(git diff --cached --name-only -- "*.cpp" "*.h" "*.hpp")
+    for f in $cpp_files; do
+        if [ -f "$f" ]; then
+            clang-format --dry-run -Werror "$f"
+        fi
+    done
+fi
+
+exit 0

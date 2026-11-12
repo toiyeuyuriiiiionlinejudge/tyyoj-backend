@@ -1,0 +1,23 @@
+name: Question / Support
+description: Ask a question about using or configuring Toi Yêu Yuri Online Judge
+title: "question: "
+labels: ["question"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Have a question about tyyoj setup, problem math rendering, or judger fleet configuration? Ask here!
+  - type: textarea
+    id: question
+    attributes:
+      label: Your Question
+      description: Describe what you would like to know or clarify.
+    validations:
+      required: true
+  - type: textarea
+    id: context
+    attributes:
+      label: Context & Attempts
+      description: What documentation have you checked or what steps have you tried so far?
+    validations:
+      required: false

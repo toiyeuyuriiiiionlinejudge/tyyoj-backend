@@ -1,0 +1,47 @@
+- name: "bug"
+  color: "d73a4a"
+  description: "Something isn't working"
+
+- name: "enhancement"
+  color: "a2eeef"
+  description: "New feature or request"
+
+- name: "documentation"
+  color: "0075ca"
+  description: "Improvements or additions to documentation"
+
+- name: "judger"
+  color: "e99695"
+  description: "Related to persistent judger workers and task execution"
+
+- name: "sandbox"
+  color: "f9d0c4"
+  description: "Related to Linux sandbox, cgroups v2, namespaces, seccomp"
+
+- name: "backend"
+  color: "bfdadc"
+  description: "Related to Rust backend API and Docker Engine provisioner"
+
+- name: "frontend"
+  color: "c5def5"
+  description: "Related to React/Vite/Tailwind web interface"
+
+- name: "contracts"
+  color: "bfd4f2"
+  description: "Related to shared schemas and OpenAPI contracts"
+
+- name: "question"
+  color: "d876e3"
+  description: "Further information is requested"
+
+- name: "security"
+  color: "ee0701"
+  description: "Security vulnerability or sandbox hardening"
+
+- name: "good first issue"
+  color: "7057ff"
+  description: "Good for newcomers"
+
+- name: "help wanted"
+  color: "008672"
+  description: "Extra attention is needed"

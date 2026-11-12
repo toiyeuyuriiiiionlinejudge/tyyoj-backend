@@ -1,0 +1,112 @@
+# AI Policy - Mandatory Ignore List (Verbatim)
+AI_REQUIREMENTS.md.local
+AI_NOTES.md
+AI_SCRATCH.md
+.ai/
+.ai-cache/
+.claude/
+.cursor/
+.cursorrules
+.aider*
+.continue/
+.copilot/
+.copilot-instructions.md
+.gemini/
+.windsurf/
+.windsurfrules
+.codeium/
+.clinerules
+.roorules
+.rules
+.llm/
+.anthropic/
+.ollama/
+.llm-cache/
+prompt_history/
+*.prompt.md
+CLAUDE.md
+AGENTS.md
+GEMINI.md
+PROMPT.md
+PROMPTS.md
+
+# Operating System Files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+*~
+*.bak
+
+# IDE & Editor Files
+.vscode/*
+!.vscode/settings.json
+!.vscode/tasks.json
+!.vscode/launch.json
+!.vscode/extensions.json
+.idea/
+*.swp
+*.swo
+*.sublime-project
+*.sublime-workspace
+
+# Secrets & Environment Variables
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+*.crt
+*.pfx
+*.p12
+secrets/
+
+# Logs & Diagnostics
+*.log
+logs/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# Rust Artifacts
+target/
+**/*.rs.bk
+Cargo.lock.backup
+
+# C / C++ Build Artifacts
+build/
+bin/
+cmake-build-*/
+CMakeFiles/
+CMakeCache.txt
+*.o
+*.obj
+*.a
+*.lib
+*.so
+*.dylib
+*.dll
+*.exe
+
+# Node / TypeScript Artifacts
+node_modules/
+dist/
+.vite/
+.turbo/
+coverage/
+.nyc_output/
+
+# Docker & Container Scratch
+.docker/
+
+# Database & Persistent Volumes
+postgres_data/
+redis_data/
+
+# OpenCode & Superpowers Scratch
+.superpowers/
+.opencode/

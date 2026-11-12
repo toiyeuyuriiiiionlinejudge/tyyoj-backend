@@ -1,0 +1,26 @@
+* text=auto eol=lf
+
+*.rs text diff=rust eol=lf
+*.cpp text diff=cpp eol=lf
+*.hpp text diff=cpp eol=lf
+*.h text diff=cpp eol=lf
+*.pas text eol=lf
+*.py text diff=python eol=lf
+*.js text eol=lf
+*.jsx text eol=lf
+*.ts text eol=lf
+*.tsx text eol=lf
+*.json text eol=lf
+*.yaml text eol=lf
+*.yml text eol=lf
+*.md text eol=lf
+*.toml text eol=lf
+
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.gif binary
+*.ico binary
+*.pdf binary
+*.zip binary
+*.tar.gz binary
