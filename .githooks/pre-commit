@@ -19,9 +19,9 @@ if [ -f "Cargo.toml" ]; then
     fi
 fi
 
-# If C++ files modified in judger, check clang-format
+# If C++ files modified in judger sandbox (excluding vendor include/), check clang-format
 if [ -f "CMakeLists.txt" ] && command -v clang-format &>/dev/null; then
-    cpp_files=$(git diff --cached --name-only -- "*.cpp" "*.h" "*.hpp")
+    cpp_files=$(git diff --cached --name-only -- "src/sandbox/*.cpp" "src/sandbox/*.h" "src/sandbox/*.hpp")
     for f in $cpp_files; do
         if [ -f "$f" ]; then
             clang-format --dry-run -Werror "$f"
