@@ -16,8 +16,8 @@
 ---
 
 ## PROJECT CONTEXT
-- **Project:** Toi Yêu Yuri Online Judge (`tyyoj`) — A high-security, multi-repository Online Judge platform featuring Admin-controlled persistent Docker Judger provisioning, Markdown + KaTeX problem statements, and multi-mode competitive programming judging (Standard, Custom Checker, Interactive).
-- **Purpose / users:** Competitive programmers, problem setters, and contest administrators needing an isolated, self-hosted online judge with manual/GUI-controlled Docker worker scaling and rich mathematical problem rendering.
+- **Project:** Toi Yêu Yuri Online Judge (`tyyoj`) — A high-security, multi-repository Online Judge platform featuring Admin-controlled persistent Podman Judger provisioning, Markdown + KaTeX problem statements, and multi-mode competitive programming judging (Standard, Custom Checker, Interactive).
+- **Purpose / users:** Competitive programmers, problem setters, and contest administrators needing an isolated, self-hosted online judge with manual/GUI-controlled Podman worker scaling and rich mathematical problem rendering.
 - **Deadline:** None (continuous milestone-driven bootstrap).
 
 ---
@@ -32,8 +32,8 @@
 
 ## TECH STACK
 - **Language Selection Principle:** Strictly follows **Safety > Performance > Standard**.
-- **Core Backend API & Docker Judger Orchestrator (`tyyoj-backend`):**
-  - **Rust** (`axum`, `tokio`, `sqlx`, `bollard` Docker Engine API, `lettre` SMTP, `redis`/`fred`).
+- **Core Backend API & Podman Judger Orchestrator (`tyyoj-backend`):**
+  - **Rust** (`axum`, `tokio`, `sqlx`, `bollard` Podman/Docker Engine API socket, `lettre` SMTP, `redis`/`fred`).
 - **Shared Contracts & Schemas (`tyyoj-contracts`):**
   - **Rust** + OpenAPI specs.
 - **Sandboxed Judger Engine (`tyyoj-judger`):**
@@ -41,10 +41,10 @@
 - **Debug Frontend (`tyyoj-frontend`):**
   - **Node.js (Active LTS) + TypeScript + React + Vite + TailwindCSS** (`react-markdown`, `remark-math`, `rehype-katex`, `katex`).
 - **Database & Cache:**
-  - **PostgreSQL** (current official LTS/stable major tag, isolated in dedicated Docker container with persistent volume and internal network).
-  - **Redis** (current stable Docker tag for submission queues, worker heartbeats, and verification tokens).
+  - **PostgreSQL** (current official LTS/stable major tag, isolated in dedicated container with persistent volume and internal network).
+  - **Redis** (current stable container tag for submission queues, worker heartbeats, and verification tokens).
 - **Infra & Deployment:**
-  - Docker & Docker Compose (`tyyoj` base repo); dynamic persistent `tyyoj-judger` containers provisioned on-demand via Admin GUI through Docker Engine socket.
+  - Podman & Podman Compose (`tyyoj` base repo); dynamic persistent `tyyoj-judger` containers provisioned on-demand via Admin GUI through Podman Engine socket (`podman.sock`).
 - **Execution Constraints:**
   - Minimize/avoid Python in system infrastructure (strictly restricted to being a contestant submission language inside isolated judger containers).
   - Isolate untrusted contestant code execution with `NetworkMode: "none"`, strict cgroup CPU/memory/PID limits, read-only rootfs, and tmpfs scratch mounts.
@@ -57,8 +57,8 @@
 
 ## ENVIRONMENT (dev-only — NOT production)
 - **OS:** Debian 13 (Trixie) · **Arch:** x86_64 · **Sudo:** passwordless sudo · **Pkg mgrs:** apt, cargo, npm/pnpm, rustup
-- **Runtimes:** None pre-installed (agent MUST actively search online for current LTS/latest stable versions before installing toolchains: Rust stable, Node.js active LTS, C++ g++/clang on Debian 13, Docker Engine + Compose plugin, Free Pascal `fpc` and `python3`/`pypy3` inside judger image).
-- **Docker:** Docker Engine + Docker Socket API.
+- **Runtimes:** None pre-installed (agent MUST actively search online for current LTS/latest stable versions before installing toolchains: Rust stable, Node.js active LTS, C++ g++/clang on Debian 13, Podman + Podman Compose, Free Pascal `fpc` and `python3`/`pypy3` inside judger image).
+- **Container Engine:** Podman + Podman Socket API (`podman.sock`).
 - **git:** pre-installed.
 - **gh authed:** yes (authenticated GitHub CLI).
 - **Network/proxy:** Direct internet access.
@@ -155,7 +155,7 @@
 - **Mandatory Live Search for LTS & Latest Compatible Libraries:**
   Before installing runtimes or writing `Cargo.toml`, `package.json`, `.nvmrc`, `rust-toolchain.toml`, or `Dockerfile` base tags, query live sources (web search, `nodejs.org`, `crates.io` / `cargo search`, `registry.npmjs.org` / `npm view`, Docker Hub tags) to verify the exact current Active LTS versions (Node.js LTS, PostgreSQL stable, Debian 13 slim tags) and latest compatible stable versions of every crate (`axum`, `tokio`, `sqlx`, `bollard`, `lettre`, `redis`, `argon2`, `serde`, `utoipa`) and npm package (`react`, `vite`, `tailwindcss`, `react-markdown`, `remark-math`, `rehype-katex`, `katex`). Record all resolved versions and verification dates in `AI_REQUIREMENTS.md`.
 - **Admin-Controlled Persistent Judger Lifecycle:**
-  Unlike ephemeral one-shot containers, `tyyoj-judger` workers are explicitly created, scaled (count N), started, stopped, and removed by an Administrator via the Admin GUI (`tyyoj-frontend` -> `tyyoj-backend` -> Docker Engine API). Once created by Admin, each judger container runs continuously as a persistent daemon (`restart: unless-stopped`), sending periodic heartbeats to Redis and consuming submission jobs sequentially until Admin stops or deletes it.
+  Unlike ephemeral one-shot containers, `tyyoj-judger` workers are explicitly created, scaled (count N), started, stopped, and removed by an Administrator via the Admin GUI (`tyyoj-frontend` -> `tyyoj-backend` -> Podman Engine API socket via `bollard`). Once created by Admin, each judger container runs continuously as a persistent daemon (`restart: unless-stopped`), sending periodic heartbeats to Redis and consuming submission jobs sequentially until Admin stops or deletes it.
 - **Supported Contestant Languages & Judge Modes:**
   1. Languages inside `tyyoj-judger`: **C++** (`g++ -std=c++20 -O2`), **Pascal** (`fpc -O2`), and **Python** (`python3` / `pypy3`).
   2. Judge Modes:
@@ -171,9 +171,9 @@
 
 ## MVP SCOPE CHECKLIST
 - [ ] Multi-repo architecture under `toiyeuyuriiiiionlinejudge` (`tyyoj` base orchestrator + `tyyoj-contracts`, `tyyoj-backend`, `tyyoj-judger`, `tyyoj-frontend`).
-- [ ] User authentication (`argon2id` + JWT/session) with SMTP email verification (configurable SMTP via `.env` + local Mailpit in Docker Compose for dev).
+- [ ] User authentication (`argon2id` + JWT/session) with SMTP email verification (configurable SMTP via `.env` + local Mailpit in Podman Compose for dev).
 - [ ] Problem CRUD & preview supporting full Markdown + inline/block KaTeX math rendering (`$...$` and `$$...$$`), test case archive upload, and judge mode configuration.
-- [ ] Admin GUI for Judger fleet management: Admin explicitly specifies/creates Judger instances via GUI; upon creation, `tyyoj-backend` provisions Docker containers via Docker Engine API that run continuously as persistent workers pulling jobs from Redis until stopped/deleted by Admin, with live worker status/telemetry shown in Admin GUI.
+- [ ] Admin GUI for Judger fleet management: Admin explicitly specifies/creates Judger instances via GUI; upon creation, `tyyoj-backend` provisions Podman containers via Podman Engine API that run continuously as persistent workers pulling jobs from Redis until stopped/deleted by Admin, with live worker status/telemetry shown in Admin GUI.
 - [ ] Sandboxed Judger supporting 3 submission languages (**C++**, **Pascal**, **Python**) and 3 judging modes (**Standard** diff/token, **Custom Checker** with `testlib.h` support, and **Interactive** bidirectional pipe judge).
 - [ ] Submission pipeline via Redis queue with live verdict updates (`PENDING`, `COMPILING`, `RUNNING`, `ACCEPTED`, `WRONG_ANSWER`, `TIME_LIMIT_EXCEEDED`, `MEMORY_LIMIT_EXCEEDED`, `RUNTIME_ERROR`, `COMPILATION_ERROR`, `IDLENESS_LIMIT_EXCEEDED`) and basic scoreboard.
 - [ ] Functional debug-level frontend built with React + Vite + TailwindCSS covering auth, Markdown+KaTeX problems, code submission, Admin Judger control panel, and scoreboard.
@@ -232,6 +232,7 @@
 ---
 
 ## CHANGELOG of requirements
+- 2026-11-13: User requirement update: Migrated container infrastructure entirely from Docker to Podman (podman, podman-compose, podman.sock API socket for Bollard orchestration).
 - 2026-11-13: User requirement update: Enforced unified domain routing for API under `/api/v{version}/` instead of separate public ports; configured transparent proxying for `/api` and `/health` in frontend dev server and reverse proxy architecture.
 - 2026-11-12: Created 5 public GitHub repositories under `toiyeuyuriiiiionlinejudge` (tyyoj, tyyoj-contracts, tyyoj-backend, tyyoj-judger, tyyoj-frontend) and pushed initial signed commits via SSH. Completed Task 13.
 - 2026-11-12: Initialized git on main branch across all 5 repos, verified .gitignore blocks secrets, and committed initial signed commits with Co-authored-by trailer and validated SSH signatures. Completed Task 12.

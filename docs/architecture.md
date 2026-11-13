@@ -19,36 +19,34 @@ This document details the system design, communication protocols, sandboxing mod
                                   | HTTPS / WebSocket                               | HTTPS / WebSocket
                                   v                                                 v
 +----------------------------------------------------------------------------------------------------+
-|                                    tyyoj-frontend (React 19 + Vite)                                |
+|                                         UNIFIED DOMAIN INGRESS                                     |
 |                                                                                                    |
-|  - Problem viewer (react-markdown, remark-math, rehype-katex, katex)                               |
-|  - Monaco Code Editor (C++, Pascal, Python3)                                                       |
-|  - Live Submissions & Standings Table                                                              |
-|  - Admin Judger Management Dashboard                                                               |
-+-------------------------------------------------+--------------------------------------------------+
-                                                  |
-                                                  | REST API (OpenAPI 3.1) / WebSocket
-                                                  v
-+----------------------------------------------------------------------------------------------------+
-|                                      tyyoj-backend (Rust + Axum)                                   |
-|                                                                                                    |
-|  - Auth & Security: Argon2id password hashing, JWT auth, SMTP email verification (Lettre)           |
-|  - Problem Management: Test case archives, Markdown statements, judge mode configuration          |
-|  - Submission Ingestion: Validates language/mode, pushes submission jobs to Redis queue            |
-|  - Admin Judger Fleet Orchestrator: Communicates with Docker Engine API via Bollard                |
-|    * Explicitly creates, starts, scales, inspects, and deletes persistent Judger containers        |
-+--------------------+----------------------------+---------------------------------+----------------+
-                     |                            |                                 |
-        SQL Queries  |               Redis Queue  |               Docker Engine API |
-        (SQLx async) |               & Heartbeats |               (Unix Domain Sock)|
-                     v                            v                                 v
-+----------------------------+   +----------------------------+   +----------------------------------+
-|   PostgreSQL 17 Database   |   |       Redis 8 Cache        |   |   Docker Daemon (dockerd API)    |
-|                            |   |                            |   |                                  |
-| - Users & credentials      |   | - Submission Job Queue     |   | Provisions & manages persistent  |
-| - Problems & test metadata |   | - Worker Heartbeats & stats|   | tyyoj-judger worker containers   |
-| - Submissions & verdicts   |   | - Live verdict pub/sub     |   |                                  |
-+----------------------------+   +--------------+-------------+   +-----------------+----------------+
+|  - Root / Static / SPA Paths ('/*')  ---------->  tyyoj-frontend (React 19 + Vite SPA)            |
+|  - API Paths ('/api/v{version}/*', '/health') ->  tyyoj-backend (Rust Axum Engine)                 |
++---------------------------------+-------------------------------------------------+----------------+
+                                  |                                                 |
+                                  | Serves UI & KaTeX Assets                        | Dispatches API
+                                  v                                                 v
++----------------------------------------------------+   +-------------------------------------------+
+|          tyyoj-frontend (React 19 + Vite)          |   |        tyyoj-backend (Rust + Axum)        |
+|                                                    |   |                                           |
+| - Problem viewer (Markdown + KaTeX Math)           |   | - Auth: Argon2id + JWT + SMTP Lettre      |
+| - Monaco Code Editor (C++, Pascal, Python3)        |   | - Problem & Testcase CRUD                 |
+| - Live Submissions & Scoreboard                    |   | - Bollard Podman Engine Provisioner       |
+| - Admin Judger Fleet Control Panel                 |   | - Redis Submission Queue Ingestion        |
++----------------------------------------------------+   +-----+-------------------------+-----+-----+
+                                                               |                         |     |
+                     |                                         |                         |
+        SQL Queries  |                        Redis Queue      |    Podman Engine API    |
+        (SQLx async) |                        & Heartbeats     |    (/run/podman/podman.sock)
+                     v                                     v                             v
++----------------------------+            +----------------------------+   +----------------------------------+
+|   PostgreSQL 17 Database   |            |       Redis 8 Cache        |   |    Podman Engine (podman.sock)   |
+|                            |            |                            |   |                                  |
+| - Users & credentials      |            | - Submission Job Queue     |   | Provisions & manages persistent  |
+| - Problems & test metadata |            | - Worker Heartbeats & stats|   | tyyoj-judger worker containers   |
+| - Submissions & verdicts   |            | - Live verdict pub/sub     |   |                                  |
++----------------------------+            +--------------+-------------+   +-----------------+----------------+
                                                 |                                   |
                                                 | Pop Job / Push Verdict            | Managed Container
                                                 v                                   v
@@ -78,11 +76,11 @@ This document details the system design, communication protocols, sandboxing mod
 ## 2. Multi-Repository Decomposition
 
 1. **`tyyoj`** (Base Orchestrator):
-   Contains root Docker Compose definitions (`docker-compose.yml`), environment profiles (`.env.example`), system documentation (`docs/`), and global build/deployment scripts.
+   Contains root Podman Compose definitions (`docker-compose.yml`), environment profiles (`.env.example`), system documentation (`docs/`), and global build/deployment scripts.
 2. **`tyyoj-contracts`**:
    Common Rust library containing models, request/response DTOs, database representations, submission verdict enums, language codes, and OpenAPI 3.1 YAML specifications.
 3. **`tyyoj-backend`**:
-   Core API server implemented in Rust using Axum. Integrates SQLx for PostgreSQL 17, Lettre for SMTP verification, Bollard for Docker Engine communication, and Redis for queues and heartbeats.
+   Core API server implemented in Rust using Axum. Integrates SQLx for PostgreSQL 17, Lettre for SMTP verification, Bollard for Podman Engine communication, and Redis for queues and heartbeats.
 4. **`tyyoj-judger`**:
    Persistent containerized worker. The outer daemon is written in Rust, which invokes the C++20 sandbox wrapper to isolate untrusted user execution with high precision.
 5. **`tyyoj-frontend`**:
@@ -95,7 +93,7 @@ This document details the system design, communication protocols, sandboxing mod
 Unlike platforms that spin up transient one-shot containers for every submission (incurring high container start overhead), `tyyoj` employs **persistent worker daemons explicitly created by Administrators**:
 
 ```text
-Admin GUI                    tyyoj-backend               Docker Engine               Redis Queue
+Admin GUI                    tyyoj-backend               Podman Engine               Redis Queue
    |                              |                            |                          |
    | 1. Admin creates Judger      |                            |                          |
    |    (Count N, RAM, CPU)       |                            |                          |
@@ -122,7 +120,7 @@ Admin GUI                    tyyoj-backend               Docker Engine          
 
 - Each worker daemon runs continuously with `restart: unless-stopped`.
 - Heartbeats are broadcast every 5 seconds to Redis (`judger:heartbeat:<worker_id>`).
-- If an admin clicks "Stop" or "Delete" in the GUI, `tyyoj-backend` gracefully signals the container via Docker Engine API (`bollard`).
+- If an admin clicks "Stop" or "Delete" in the GUI, `tyyoj-backend` gracefully signals the container via Podman Engine API (`bollard`).
 
 ---
 

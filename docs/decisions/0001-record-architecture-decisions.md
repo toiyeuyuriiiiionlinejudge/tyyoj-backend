@@ -22,7 +22,7 @@ Online Judge systems require executing arbitrary, potentially malicious user cod
 
 ### 2. Backend & Judger Daemon: Rust
 - **Decision:** Use Rust (`axum`, `tokio`, `sqlx`, `bollard`, `lettre`, `redis`) for backend services and the judger daemon.
-- **Rationale:** Rust guarantees memory safety without garbage collection pauses, provides first-class async concurrency with Tokio, and integrates natively with Docker Socket API via `bollard`.
+- **Rationale:** Rust guarantees memory safety without garbage collection pauses, provides first-class async concurrency with Tokio, and integrates natively with Podman Socket API via `bollard`.
 
 ### 3. Linux Sandbox: C++20
 - **Decision:** Low-level sandbox wrapper implemented in C++20 utilizing Linux kernel primitives: namespaces (`CLONE_NEWPID`, `CLONE_NEWNET`, `CLONE_NEWNS`, `CLONE_NEWIPC`), cgroups v2, `rlimit`, and `seccomp-bpf`.

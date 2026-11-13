@@ -5,7 +5,7 @@ edition = "2021"
 authors = ["toiyeuyuriiiii & nmkdeveloper"]
 license = "MIT"
 repository = "https://github.com/toiyeuyuriiiiionlinejudge/tyyoj-backend"
-description = "Core REST API & Docker Judger Fleet Orchestrator for Toi Yêu Yuri Online Judge"
+description = "Core REST API & Podman Judger Fleet Orchestrator for Toi Yêu Yuri Online Judge"
 
 [dependencies]
 tyyoj-contracts = { path = "../tyyoj-contracts" }
