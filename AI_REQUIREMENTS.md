@@ -164,6 +164,8 @@
      - **Interactive:** Spawns contestant process and interactor process simultaneously connected via bidirectional POSIX pipes (`stdin`/`stdout`), enforcing both CPU time limit and wall-clock idleness limit (`IDLENESS_LIMIT_EXCEEDED`).
 - **Dynamic Per-Problem Execution & Resource Limits:**
   Memory limits (in MB) and CPU/wall time limits (in ms) are dynamically configured per problem (and optionally per testcase/language) in the problem definition/database and passed dynamically through the submission job payload into the sandbox arguments. Time and memory limits MUST NOT be hardcoded in the judger daemon or sandbox wrapper.
+- **Unified Domain Routing for API (/api/v{version}/):**
+  Rather than exposing the backend API on a distinct public port for client applications, all traffic targets a single unified domain/ingress. Static/SPA assets are served from the root path, and all API endpoints are routed under `/api/v{version}/*` (e.g. `/api/v1/*`) and `/health` to `tyyoj-backend`. In local development, `tyyoj-frontend` (Vite) proxies `/api` and `/health` directly to the backend service.
 
 ---
 
@@ -230,6 +232,7 @@
 ---
 
 ## CHANGELOG of requirements
+- 2026-11-13: User requirement update: Enforced unified domain routing for API under `/api/v{version}/` instead of separate public ports; configured transparent proxying for `/api` and `/health` in frontend dev server and reverse proxy architecture.
 - 2026-11-12: Created 5 public GitHub repositories under `toiyeuyuriiiiionlinejudge` (tyyoj, tyyoj-contracts, tyyoj-backend, tyyoj-judger, tyyoj-frontend) and pushed initial signed commits via SSH. Completed Task 13.
 - 2026-11-12: Initialized git on main branch across all 5 repos, verified .gitignore blocks secrets, and committed initial signed commits with Co-authored-by trailer and validated SSH signatures. Completed Task 12.
 - 2026-11-12: Created .githooks (commit-msg enforcing Conventional Commits and Co-authored-by trailer, pre-commit blocking secrets and running linters) and tested validation. Completed Task 11.
