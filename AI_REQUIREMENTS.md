@@ -199,9 +199,9 @@
 - [x] Task 11: [RE-READ] Setup lint+format+test+pre-commit hooks; wire into CI workflows.
 - [x] Task 12: [RE-READ] `git init -b main`; `git add -A`; first signed commit; verify `.gitignore` blocks secrets. Show status and signature.
 - [x] Task 13: [RE-READ] Run `gh repo create` for `tyyoj` and sibling repos (`tyyoj-contracts`, `tyyoj-backend`, `tyyoj-judger`, `tyyoj-frontend`). Push initial commits. Report URLs. STOP for owner confirmation.
-- [ ] Task 14: [RE-READ] Apply branch protection on `main` across all repos. Push labels. Commit templates.
-- [ ] Task 15: [RE-READ] Open initial issues — one per MVP item in `AI_REQUIREMENTS.md`.
-- [ ] Task 16: [RE-READ] Final report: repo tree, URLs, git log, checklist diff, owner-review checklist.
+- [x] Task 14: [RE-READ] Apply branch protection on `main` across all repos. Push labels. Commit templates.
+- [x] Task 15: [RE-READ] Open initial issues — one per MVP item in `AI_REQUIREMENTS.md`.
+- [x] Task 16: [RE-READ] Final report: repo tree, URLs, git log, checklist diff, owner-review checklist.
 
 ---
 
@@ -236,6 +236,9 @@
 ---
 
 ## CHANGELOG of requirements
+- 2026-11-14: Completed Task 16 final verification and reporting. Successfully bootstrapped entire tyyoj multi-repository architecture from zero with full toolchains, Podman infra, Nginx routing, and light-mode portal. Ready for feature development.
+- 2026-11-14: Created initial GitHub issues for each MVP item on toiyeuyuriiiiionlinejudge/tyyoj with label 'enhancement' and linked to AI_REQUIREMENTS.md. Completed Task 15.
+- 2026-11-14: Applied branch protection rules on `main` across all 6 repos (require signed commits, PR reviews, prevent force push and deletion) and synchronized labels. Completed Task 14.
 - 2026-11-14: User requirement update: Renamed documentation repository from 'document' to 'tyyoj-docs' and updated remote repositories and Nginx static routing.
 - 2026-11-14: User requirement update: Added frontend views (Home, Problems, Contests, Organizations, Submissions, About Us, Blogs, Wiki) in minimalist light-mode and created an Admin Dashboard managing all routes and API endpoints.
 - 2026-11-14: User requirement update: Added public repo 'document' containing minimal static HTML installation guide, and configured Nginx reverse proxy on port 80 routing unified domain ingress.
