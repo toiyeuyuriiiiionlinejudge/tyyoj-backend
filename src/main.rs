@@ -146,6 +146,48 @@ pub struct CreateSubmissionPayload {
 }
 
 #[derive(Debug, Deserialize)]
+pub struct CreateProblemPayload {
+    pub code: String,
+    pub title: String,
+    pub difficulty: String,
+    pub statement_markdown: String,
+    pub time_limit_ms: i64,
+    pub memory_limit_mb: i64,
+    pub judge_mode: String,
+    pub sample_input: Option<String>,
+    pub sample_output: Option<String>,
+}
+
+#[derive(Debug, Deserialize)]
+pub struct CreateContestPayload {
+    pub title: String,
+    pub description: String,
+    pub start_time: chrono::DateTime<chrono::Utc>,
+    pub end_time: chrono::DateTime<chrono::Utc>,
+    pub rule_type: String,
+}
+
+#[derive(Debug, Deserialize)]
+pub struct CreateOrganizationPayload {
+    pub name: String,
+    pub description: String,
+}
+
+#[derive(Debug, Deserialize)]
+pub struct CreateBlogPayload {
+    pub title: String,
+    pub author_name: String,
+    pub content_markdown: String,
+}
+
+#[derive(Debug, Deserialize)]
+pub struct CreateWikiPayload {
+    pub title: String,
+    pub category: String,
+    pub content_markdown: String,
+}
+
+#[derive(Debug, Deserialize)]
 pub struct RegisterPayload {
     pub username: String,
     pub email: String,
@@ -204,12 +246,12 @@ async fn main() {
     let app = Router::new()
         .route("/health", get(health_check))
         .route("/api/v1/verdicts", get(list_verdicts))
-        .route("/api/v1/problems", get(list_problems))
+        .route("/api/v1/problems", get(list_problems).post(create_problem))
         .route("/api/v1/problems/{id_or_code}", get(get_problem))
-        .route("/api/v1/contests", get(list_contests))
-        .route("/api/v1/organizations", get(list_organizations))
-        .route("/api/v1/blogs", get(list_blogs))
-        .route("/api/v1/wikis", get(list_wikis))
+        .route("/api/v1/contests", get(list_contests).post(create_contest))
+        .route("/api/v1/organizations", get(list_organizations).post(create_organization))
+        .route("/api/v1/blogs", get(list_blogs).post(create_blog))
+        .route("/api/v1/wikis", get(list_wikis).post(create_wiki))
         .route("/api/v1/submissions", get(list_submissions).post(create_submission))
         .route("/api/v1/auth/register", post(register_user))
         .route("/api/v1/auth/login", post(login_user))
@@ -341,6 +383,48 @@ async fn get_problem(
     problem.map(Json).ok_or(StatusCode::NOT_FOUND)
 }
 
+// Handler: Create Problem (PostgreSQL 17)
+async fn create_problem(
+    State(state): State<AppState>,
+    Json(payload): Json<CreateProblemPayload>,
+) -> Result<impl IntoResponse, (StatusCode, String)> {
+    let problem_id = Uuid::new_v4();
+    sqlx::query(
+        "INSERT INTO problems (id, code, title, difficulty, statement_markdown, time_limit_ms, memory_limit_mb, judge_mode)
+         VALUES ($1, $2, $3, $4, $5, $6, $7, $8)"
+    )
+    .bind(problem_id)
+    .bind(&payload.code)
+    .bind(&payload.title)
+    .bind(&payload.difficulty)
+    .bind(&payload.statement_markdown)
+    .bind(payload.time_limit_ms)
+    .bind(payload.memory_limit_mb)
+    .bind(&payload.judge_mode)
+    .execute(&state.db)
+    .await
+    .map_err(|e| (StatusCode::INTERNAL_SERVER_ERROR, e.to_string()))?;
+
+    if let (Some(input), Some(output)) = (payload.sample_input, payload.sample_output) {
+        let _ = sqlx::query(
+            "INSERT INTO test_cases (id, problem_id, input_data, expected_output, is_sample, order_num)
+             VALUES ($1, $2, $3, $4, TRUE, 1)"
+        )
+        .bind(Uuid::new_v4())
+        .bind(problem_id)
+        .bind(input)
+        .bind(output)
+        .execute(&state.db)
+        .await;
+    }
+
+    Ok((StatusCode::CREATED, Json(serde_json::json!({
+        "id": problem_id,
+        "code": payload.code,
+        "message": "Problem created successfully in database."
+    }))))
+}
+
 // Handler: List Contests (PostgreSQL 17)
 async fn list_contests(State(state): State<AppState>) -> Result<Json<Vec<ContestRecord>>, StatusCode> {
     let contests = sqlx::query_as::<_, ContestRecord>(
@@ -351,6 +435,33 @@ async fn list_contests(State(state): State<AppState>) -> Result<Json<Vec<Contest
     .map_err(|_| StatusCode::INTERNAL_SERVER_ERROR)?;
 
     Ok(Json(contests))
+}
+
+// Handler: Create Contest (PostgreSQL 17)
+async fn create_contest(
+    State(state): State<AppState>,
+    Json(payload): Json<CreateContestPayload>,
+) -> Result<impl IntoResponse, (StatusCode, String)> {
+    let contest_id = Uuid::new_v4();
+    sqlx::query(
+        "INSERT INTO contests (id, title, description, start_time, end_time, rule_type)
+         VALUES ($1, $2, $3, $4, $5, $6)"
+    )
+    .bind(contest_id)
+    .bind(&payload.title)
+    .bind(&payload.description)
+    .bind(payload.start_time)
+    .bind(payload.end_time)
+    .bind(&payload.rule_type)
+    .execute(&state.db)
+    .await
+    .map_err(|e| (StatusCode::INTERNAL_SERVER_ERROR, e.to_string()))?;
+
+    Ok((StatusCode::CREATED, Json(serde_json::json!({
+        "id": contest_id,
+        "title": payload.title,
+        "message": "Contest created successfully in database."
+    }))))
 }
 
 // Handler: List Organizations (PostgreSQL 17)
@@ -365,6 +476,30 @@ async fn list_organizations(State(state): State<AppState>) -> Result<Json<Vec<Or
     Ok(Json(orgs))
 }
 
+// Handler: Create Organization (PostgreSQL 17)
+async fn create_organization(
+    State(state): State<AppState>,
+    Json(payload): Json<CreateOrganizationPayload>,
+) -> Result<impl IntoResponse, (StatusCode, String)> {
+    let org_id = Uuid::new_v4();
+    sqlx::query(
+        "INSERT INTO organizations (id, name, description, member_count, contests_count)
+         VALUES ($1, $2, $3, 1, 0)"
+    )
+    .bind(org_id)
+    .bind(&payload.name)
+    .bind(&payload.description)
+    .execute(&state.db)
+    .await
+    .map_err(|e| (StatusCode::INTERNAL_SERVER_ERROR, e.to_string()))?;
+
+    Ok((StatusCode::CREATED, Json(serde_json::json!({
+        "id": org_id,
+        "name": payload.name,
+        "message": "Organization created successfully in database."
+    }))))
+}
+
 // Handler: List Blogs (PostgreSQL 17)
 async fn list_blogs(State(state): State<AppState>) -> Result<Json<Vec<BlogRecord>>, StatusCode> {
     let blogs = sqlx::query_as::<_, BlogRecord>(
@@ -377,6 +512,31 @@ async fn list_blogs(State(state): State<AppState>) -> Result<Json<Vec<BlogRecord
     Ok(Json(blogs))
 }
 
+// Handler: Create Blog (PostgreSQL 17)
+async fn create_blog(
+    State(state): State<AppState>,
+    Json(payload): Json<CreateBlogPayload>,
+) -> Result<impl IntoResponse, (StatusCode, String)> {
+    let blog_id = Uuid::new_v4();
+    sqlx::query(
+        "INSERT INTO blogs (id, title, author_name, content_markdown)
+         VALUES ($1, $2, $3, $4)"
+    )
+    .bind(blog_id)
+    .bind(&payload.title)
+    .bind(&payload.author_name)
+    .bind(&payload.content_markdown)
+    .execute(&state.db)
+    .await
+    .map_err(|e| (StatusCode::INTERNAL_SERVER_ERROR, e.to_string()))?;
+
+    Ok((StatusCode::CREATED, Json(serde_json::json!({
+        "id": blog_id,
+        "title": payload.title,
+        "message": "Blog created successfully in database."
+    }))))
+}
+
 // Handler: List Wikis (PostgreSQL 17)
 async fn list_wikis(State(state): State<AppState>) -> Result<Json<Vec<WikiRecord>>, StatusCode> {
     let wikis = sqlx::query_as::<_, WikiRecord>(
@@ -387,6 +547,31 @@ async fn list_wikis(State(state): State<AppState>) -> Result<Json<Vec<WikiRecord
     .map_err(|_| StatusCode::INTERNAL_SERVER_ERROR)?;
 
     Ok(Json(wikis))
+}
+
+// Handler: Create Wiki (PostgreSQL 17)
+async fn create_wiki(
+    State(state): State<AppState>,
+    Json(payload): Json<CreateWikiPayload>,
+) -> Result<impl IntoResponse, (StatusCode, String)> {
+    let wiki_id = Uuid::new_v4();
+    sqlx::query(
+        "INSERT INTO wikis (id, title, category, content_markdown)
+         VALUES ($1, $2, $3, $4)"
+    )
+    .bind(wiki_id)
+    .bind(&payload.title)
+    .bind(&payload.category)
+    .bind(&payload.content_markdown)
+    .execute(&state.db)
+    .await
+    .map_err(|e| (StatusCode::INTERNAL_SERVER_ERROR, e.to_string()))?;
+
+    Ok((StatusCode::CREATED, Json(serde_json::json!({
+        "id": wiki_id,
+        "title": payload.title,
+        "message": "Wiki created successfully in database."
+    }))))
 }
 
 // Handler: List Submissions (PostgreSQL 17)

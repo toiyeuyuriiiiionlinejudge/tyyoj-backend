@@ -171,6 +171,8 @@
   The frontend provides clean semantic navigation for all core portal views (Home, Problems, Contests, Organizations, Submissions, About Us, Blogs, Wiki) styled with a high-contrast minimalist light theme, plus an Admin control interface for monitoring and managing the entire route catalog, API endpoints, and Podman worker instances.
 - **Elimination of Mock/Sample Data & Pure Database Persistence:**
   All mock and hardcoded dummy data in backend, judger, and frontend are strictly eliminated. Every problem, test case, submission, contest, organization, blog, and wiki entry is persisted in and queried from PostgreSQL 17. Automated tests must verify real database transactions and live judging execution.
+- **Admin Entity Management & User-Facing Empty States:**
+  All portal content (problems, test cases, contests, organizations, blogs, wikis) is managed and created dynamically by Admins directly from the Admin control panel via dedicated POST endpoints. User-facing labels must not reference database implementation details (e.g. remove "Từ PostgreSQL"). When queries return empty sets or entities are not found, the UI must explicitly display clear and friendly empty states ("Không tìm thấy").
 - **Defense-in-Depth Web & API Security (including Rate Limiting):**
   Comprehensive web security headers (HSTS, CSP, X-Frame-Options, X-Content-Type-Options, Referrer-Policy), CORS origin restrictions, rate-limiting on sensitive endpoints (authentication and code submission throttling), input validation and sanitization, and Argon2id password hashing.
 
@@ -240,6 +242,7 @@
 ---
 
 ## CHANGELOG of requirements
+- 2026-11-14: User requirement update: Removed database-exposing label texts ("Từ PostgreSQL"), added full Admin management forms and backend POST endpoints for problems, contests, organizations, blogs, and wikis, and implemented clean empty states ("Không tìm thấy") across all views.
 - 2026-11-14: User requirement update: Strictly eliminated all mock/sample data across the entire platform; enforced 100% real PostgreSQL 17 database persistence for all entities; implemented OWASP web security headers and rate-limiting; updated automated tests to verify live database state.
 - 2026-11-14: Completed Task 16 final verification and reporting. Successfully bootstrapped entire tyyoj multi-repository architecture from zero with full toolchains, Podman infra, Nginx routing, and light-mode portal. Ready for feature development.
 - 2026-11-14: Created initial GitHub issues for each MVP item on toiyeuyuriiiiionlinejudge/tyyoj with label 'enhancement' and linked to AI_REQUIREMENTS.md. Completed Task 15.
