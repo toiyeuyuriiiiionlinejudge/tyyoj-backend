@@ -87,7 +87,7 @@
 - **Repo:** `tyyoj` (base)
 - **Visibility:** public (ALL repos MUST be public)
 - **gh allowed:** yes
-- **Extra repos:** `tyyoj-contracts` (public), `tyyoj-backend` (public), `tyyoj-judger` (public), `tyyoj-frontend` (public), `document` (public - static HTML setup guide with minimal styling), plus any modular shared library repos deemed necessary (all public).
+- **Extra repos:** `tyyoj-contracts` (public), `tyyoj-backend` (public), `tyyoj-judger` (public), `tyyoj-frontend` (public), `tyyoj-docs` (public - static HTML setup guide with minimal styling), plus any modular shared library repos deemed necessary (all public).
 - **Branch protection:** Enabled on `main` (require status checks, block force pushes, require signed commits).
 - **Labels:** standard + `judger`, `sandbox`, `frontend`, `backend`, `contracts`, `enhancement`, `bug`.
 - **Templates:** `.github/ISSUE_TEMPLATE/{bug_report,feature_request,question}.yml`, `config.yml`, `PULL_REQUEST_TEMPLATE.md`, `dependabot.yml`.
@@ -236,6 +236,7 @@
 ---
 
 ## CHANGELOG of requirements
+- 2026-11-14: User requirement update: Renamed documentation repository from 'document' to 'tyyoj-docs' and updated remote repositories and Nginx static routing.
 - 2026-11-14: User requirement update: Added frontend views (Home, Problems, Contests, Organizations, Submissions, About Us, Blogs, Wiki) in minimalist light-mode and created an Admin Dashboard managing all routes and API endpoints.
 - 2026-11-14: User requirement update: Added public repo 'document' containing minimal static HTML installation guide, and configured Nginx reverse proxy on port 80 routing unified domain ingress.
 - 2026-11-13: User requirement update: Migrated container infrastructure entirely from Docker to Podman (podman, podman-compose, podman.sock API socket for Bollard orchestration).
