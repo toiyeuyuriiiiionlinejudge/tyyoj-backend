@@ -174,7 +174,9 @@
 - **Admin Entity Management & User-Facing Empty States:**
   All portal content (problems, test cases, contests, organizations, blogs, wikis) is managed and created dynamically by Admins directly from the Admin control panel via dedicated POST endpoints. User-facing labels must not reference database implementation details (e.g. remove "Từ PostgreSQL"). When queries return empty sets or entities are not found, the UI must explicitly display clear and friendly empty states ("Không tìm thấy").
 - **Dedicated Detail Pages (Contest Details, Organization Details, Blog & Wiki Reading Views):**
-  Deep-linking and detailed interactive sub-views for Contests (problem set, live ICPC/IOI scoreboard, announcements, contest submissions), Organizations (members list, hosted contests, join button), Blogs (full article reader with Markdown), and Wikis (category browser and guide content).
+  Deep-linking and detailed interactive sub-views for Contests (problem set, live scoreboard, announcements, contest submissions), Organizations (members list, hosted contests, join button), Blogs (full article reader with Markdown), and Wikis (category browser and guide content).
+- **Problem Archive List & Dedicated Detail View Navigation:**
+  The Problems view presents a full-width problem catalog table showing problem code, title, difficulty, judge mode, and resource limits. Clicking any problem navigates to a dedicated full-width problem detail view with Markdown/KaTeX statement rendering, back navigation, and integrated code submission form.
 - **Defense-in-Depth Web & API Security (including Rate Limiting):**
   Comprehensive web security headers (HSTS, CSP, X-Frame-Options, X-Content-Type-Options, Referrer-Policy), CORS origin restrictions, rate-limiting on sensitive endpoints (authentication and code submission throttling), input validation and sanitization, and Argon2id password hashing.
 
@@ -244,6 +246,7 @@
 ---
 
 ## CHANGELOG of requirements
+- 2026-11-14: User requirement update: Updated Problems view to display a full-width problem archive list table, transitioning to a dedicated full problem detail view with back navigation upon clicking a problem.
 - 2026-11-14: User requirement update: Added dedicated detail views and interactive pages for Contests (problem set, live scoreboard, announcements), Organizations (members list, hosted contests, join button), Blog reader view, and Wiki guide reader.
 - 2026-11-14: User requirement update: Removed database-exposing label texts ("Từ PostgreSQL"), added full Admin management forms and backend POST endpoints for problems, contests, organizations, blogs, and wikis, and implemented clean empty states ("Không tìm thấy") across all views.
 - 2026-11-14: User requirement update: Strictly eliminated all mock/sample data across the entire platform; enforced 100% real PostgreSQL 17 database persistence for all entities; implemented OWASP web security headers and rate-limiting; updated automated tests to verify live database state.
