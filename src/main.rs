@@ -249,7 +249,9 @@ async fn main() {
         .route("/api/v1/problems", get(list_problems).post(create_problem))
         .route("/api/v1/problems/{id_or_code}", get(get_problem))
         .route("/api/v1/contests", get(list_contests).post(create_contest))
+        .route("/api/v1/contests/{id}", get(get_contest))
         .route("/api/v1/organizations", get(list_organizations).post(create_organization))
+        .route("/api/v1/organizations/{id}", get(get_organization))
         .route("/api/v1/blogs", get(list_blogs).post(create_blog))
         .route("/api/v1/wikis", get(list_wikis).post(create_wiki))
         .route("/api/v1/submissions", get(list_submissions).post(create_submission))
@@ -464,6 +466,22 @@ async fn create_contest(
     }))))
 }
 
+// Handler: Get Contest Detail (PostgreSQL 17)
+async fn get_contest(
+    State(state): State<AppState>,
+    Path(id): Path<Uuid>,
+) -> Result<Json<ContestRecord>, StatusCode> {
+    let contest = sqlx::query_as::<_, ContestRecord>(
+        "SELECT id, title, description, start_time, end_time, rule_type FROM contests WHERE id = $1"
+    )
+    .bind(id)
+    .fetch_optional(&state.db)
+    .await
+    .map_err(|_| StatusCode::INTERNAL_SERVER_ERROR)?;
+
+    contest.map(Json).ok_or(StatusCode::NOT_FOUND)
+}
+
 // Handler: List Organizations (PostgreSQL 17)
 async fn list_organizations(State(state): State<AppState>) -> Result<Json<Vec<OrganizationRecord>>, StatusCode> {
     let orgs = sqlx::query_as::<_, OrganizationRecord>(
@@ -474,6 +492,22 @@ async fn list_organizations(State(state): State<AppState>) -> Result<Json<Vec<Or
     .map_err(|_| StatusCode::INTERNAL_SERVER_ERROR)?;
 
     Ok(Json(orgs))
+}
+
+// Handler: Get Organization Detail (PostgreSQL 17)
+async fn get_organization(
+    State(state): State<AppState>,
+    Path(id): Path<Uuid>,
+) -> Result<Json<OrganizationRecord>, StatusCode> {
+    let org = sqlx::query_as::<_, OrganizationRecord>(
+        "SELECT id, name, description, member_count, contests_count FROM organizations WHERE id = $1"
+    )
+    .bind(id)
+    .fetch_optional(&state.db)
+    .await
+    .map_err(|_| StatusCode::INTERNAL_SERVER_ERROR)?;
+
+    org.map(Json).ok_or(StatusCode::NOT_FOUND)
 }
 
 // Handler: Create Organization (PostgreSQL 17)
