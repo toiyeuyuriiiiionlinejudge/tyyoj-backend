@@ -45,6 +45,7 @@
   - **Redis** (current stable container tag for submission queues, worker heartbeats, and verification tokens).
 - **Infra & Deployment:**
   - Podman & Podman Compose (`tyyoj` base repo); dynamic persistent `tyyoj-judger` containers provisioned on-demand via Admin GUI through Podman Engine socket (`podman.sock`).
+  - Nginx reverse proxy on port 80 routing unified domain ingress: `/` to frontend, `/api/` and `/health` to backend, `/docs/` to static HTML documentation.
 - **Execution Constraints:**
   - Minimize/avoid Python in system infrastructure (strictly restricted to being a contestant submission language inside isolated judger containers).
   - Isolate untrusted contestant code execution with `NetworkMode: "none"`, strict cgroup CPU/memory/PID limits, read-only rootfs, and tmpfs scratch mounts.
@@ -86,7 +87,7 @@
 - **Repo:** `tyyoj` (base)
 - **Visibility:** public (ALL repos MUST be public)
 - **gh allowed:** yes
-- **Extra repos:** `tyyoj-contracts` (public), `tyyoj-backend` (public), `tyyoj-judger` (public), `tyyoj-frontend` (public), plus any modular shared library repos deemed necessary (all public).
+- **Extra repos:** `tyyoj-contracts` (public), `tyyoj-backend` (public), `tyyoj-judger` (public), `tyyoj-frontend` (public), `document` (public - static HTML setup guide with minimal styling), plus any modular shared library repos deemed necessary (all public).
 - **Branch protection:** Enabled on `main` (require status checks, block force pushes, require signed commits).
 - **Labels:** standard + `judger`, `sandbox`, `frontend`, `backend`, `contracts`, `enhancement`, `bug`.
 - **Templates:** `.github/ISSUE_TEMPLATE/{bug_report,feature_request,question}.yml`, `config.yml`, `PULL_REQUEST_TEMPLATE.md`, `dependabot.yml`.
@@ -166,6 +167,8 @@
   Memory limits (in MB) and CPU/wall time limits (in ms) are dynamically configured per problem (and optionally per testcase/language) in the problem definition/database and passed dynamically through the submission job payload into the sandbox arguments. Time and memory limits MUST NOT be hardcoded in the judger daemon or sandbox wrapper.
 - **Unified Domain Routing for API (/api/v{version}/):**
   Rather than exposing the backend API on a distinct public port for client applications, all traffic targets a single unified domain/ingress. Static/SPA assets are served from the root path, and all API endpoints are routed under `/api/v{version}/*` (e.g. `/api/v1/*`) and `/health` to `tyyoj-backend`. In local development, `tyyoj-frontend` (Vite) proxies `/api` and `/health` directly to the backend service.
+- **Full-Featured Lightweight Light-Mode Frontend & Route Management:**
+  The frontend provides clean semantic navigation for all core portal views (Home, Problems, Contests, Organizations, Submissions, About Us, Blogs, Wiki) styled with a high-contrast minimalist light theme, plus an Admin control interface for monitoring and managing the entire route catalog, API endpoints, and Podman worker instances.
 
 ---
 
@@ -177,6 +180,7 @@
 - [ ] Sandboxed Judger supporting 3 submission languages (**C++**, **Pascal**, **Python**) and 3 judging modes (**Standard** diff/token, **Custom Checker** with `testlib.h` support, and **Interactive** bidirectional pipe judge).
 - [ ] Submission pipeline via Redis queue with live verdict updates (`PENDING`, `COMPILING`, `RUNNING`, `ACCEPTED`, `WRONG_ANSWER`, `TIME_LIMIT_EXCEEDED`, `MEMORY_LIMIT_EXCEEDED`, `RUNTIME_ERROR`, `COMPILATION_ERROR`, `IDLENESS_LIMIT_EXCEEDED`) and basic scoreboard.
 - [ ] Functional debug-level frontend built with React + Vite + TailwindCSS covering auth, Markdown+KaTeX problems, code submission, Admin Judger control panel, and scoreboard.
+- [ ] Comprehensive multi-view light-mode frontend interface covering Home, Problems (Markdown+KaTeX), Contests, Organizations, Submissions, About Us, Blogs, Wiki, and unified Admin Control Panel managing routes, APIs, and Podman Judgers.
 
 ---
 
@@ -232,6 +236,8 @@
 ---
 
 ## CHANGELOG of requirements
+- 2026-11-14: User requirement update: Added frontend views (Home, Problems, Contests, Organizations, Submissions, About Us, Blogs, Wiki) in minimalist light-mode and created an Admin Dashboard managing all routes and API endpoints.
+- 2026-11-14: User requirement update: Added public repo 'document' containing minimal static HTML installation guide, and configured Nginx reverse proxy on port 80 routing unified domain ingress.
 - 2026-11-13: User requirement update: Migrated container infrastructure entirely from Docker to Podman (podman, podman-compose, podman.sock API socket for Bollard orchestration).
 - 2026-11-13: User requirement update: Enforced unified domain routing for API under `/api/v{version}/` instead of separate public ports; configured transparent proxying for `/api` and `/health` in frontend dev server and reverse proxy architecture.
 - 2026-11-12: Created 5 public GitHub repositories under `toiyeuyuriiiiionlinejudge` (tyyoj, tyyoj-contracts, tyyoj-backend, tyyoj-judger, tyyoj-frontend) and pushed initial signed commits via SSH. Completed Task 13.
